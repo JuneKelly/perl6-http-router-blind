@@ -29,6 +29,26 @@ method anymethod ($path, &handler) {
     %!routes<ANY>.push(@($path, &handler));
 }
 
+
+method !keyword-match ($path, $uri) {
+    my @p = $path.split('/');
+    my @u =  $uri.split('/');
+    if @p.elems != @u.elems {
+        return;
+    }
+    my @pairs = zip(@p, @u);
+    my %params;
+    for @pairs -> @pair {
+        my $p = @pair[0];
+        my $u = @pair[1];
+        if $p ne $u && !$p.starts-with(":") {
+            return;
+        }
+        %params{$p.substr(1)} = $u;
+    }
+    return %params;
+}
+
 method dispatch ($method, $uri, %env) {
     my @potential-matches;
     @potential-matches.append(@( %!routes<ANY> ));
@@ -39,15 +59,9 @@ method dispatch ($method, $uri, %env) {
                 return &func(%env);
             }
             if $path.contains(':') {
-                my @p = $path.split('/');
-                my @u =  $uri.split('/');
-                # TODO: check the rest of the uri matches, not just count
-                if @p.elems == @u.elems {
-                    my @indexes = @p.grep-index: { .starts-with: ':' };
-                    my @keys = @p[@indexes].map: { .substr(1) };
-                    my @vals = @u[@indexes];
-                    my %params = zip(@keys, @vals).map: { $^a[0] => $^a[1] };
-                    %env<params> = %params;
+                my $params = self!keyword-match($path, $uri);
+                if $params {
+                    %env<params> = %($params);
                     return &func(%env);
                 }
             }

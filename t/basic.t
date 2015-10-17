@@ -3,7 +3,7 @@ use v6;
 BEGIN { @*INC.push('lib') };
 
 use Test;
-plan 8;
+plan 9;
 
 use HTTP::Router::Blind;
 ok 1, "'use HTTP::Router::Blind' worked";
@@ -35,6 +35,10 @@ $result = $router.dispatch('GET', "/stuff/422/thing/wat", %env);
 if $result<id> eq '422' && $result<foo> eq 'wat' {
     ok 1, "keyword match works";
 };
+$result = $router.dispatch('GET', "/no/423/not/wait", %env);
+if $result[0] == 404 {
+    ok 1, "keyword match should not work on wrong path";
+}
 
 # Regex route with named capture group
 $router.get(/\/items\/$<id>=(.*)/, sub (%env) {
