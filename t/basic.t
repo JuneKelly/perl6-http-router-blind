@@ -3,7 +3,7 @@ use v6;
 BEGIN { @*INC.push('lib') };
 
 use Test;
-plan 7;
+plan 8;
 
 use HTTP::Router::Blind;
 ok 1, "'use HTTP::Router::Blind' worked";
@@ -13,17 +13,27 @@ my $router = HTTP::Router::Blind.new();
 ok 1, "creating new router worked";
 
 
+my %env;
+my $result;
+
 ## string route
 $router.get('/about', sub (%env) {
     'this-is-get'
 });
 
-my %env;
-my $result;
-
 $result = $router.dispatch('GET', '/about', %env);
 if $result ~~ 'this-is-get' {
     ok 1, "basic string route worked";
+};
+
+# :keyword route
+$router.get("/stuff/:id/thing/:foo", sub (%env) {
+    %env<params>;
+});
+
+$result = $router.dispatch('GET', "/stuff/422/thing/wat", %env);
+if $result<id> eq '422' && $result<foo> eq 'wat' {
+    ok 1, "keyword match works";
 };
 
 # Regex route with named capture group
@@ -37,11 +47,11 @@ if $result ~~ '4221' {
 };
 
 # Regex route with positional capture group
-$router.get(/\/(.*)\/(.*)/, sub (%env) {
+$router.get(/\/reg\/(.*)\/(.*)/, sub (%env) {
     %env<params>[0], %env<params>[1]
 });
 
-$result = $router.dispatch('GET', '/aaa/bbb', %env);
+$result = $router.dispatch('GET', '/reg/aaa/bbb', %env);
 if $result[0] eq 'aaa' &&  $result[1] eq 'bbb' {
     ok 1, "regex with positional capture group worked";
 };

@@ -30,27 +30,35 @@ method anymethod ($path, &handler) {
 }
 
 method dispatch ($method, $uri, %env) {
-    my &handler;
     my @potential-matches;
     @potential-matches.append(@( %!routes<ANY> ));
     @potential-matches.append(@( %!routes{$method} ));
     for @potential-matches -> ($path, &func) {
         if $path ~~ Str {
-            if $uri ~~ $path {
-                &handler = &func;
+            if $uri eq $path {
+                return &func(%env);
+            }
+            if $path.contains(':') {
+                my @p = $path.split('/');
+                my @u =  $uri.split('/');
+                # TODO: check the rest of the uri matches, not just count
+                if @p.elems == @u.elems {
+                    my @indexes = @p.grep-index: { .starts-with: ':' };
+                    my @keys = @p[@indexes].map: { .substr(1) };
+                    my @vals = @u[@indexes];
+                    my %params = zip(@keys, @vals).map: { $^a[0] => $^a[1] };
+                    %env<params> = %params;
+                    return &func(%env);
+                }
             }
         }
         if $path ~~ Regex {
             my $match = $uri ~~ $path;
             if $match {
-                &handler = &func;
                 %env<params> = $match;
+                return &func(%env);
             }
         }
     }
-    if not &handler {
-        return &!on-not-found(%env);
-    }
-    my $result = &handler(%env);
-    return $result;
+    return &!on-not-found(%env);
 }
