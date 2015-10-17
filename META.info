@@ -5,5 +5,5 @@
   "provides"    : {
     "HTTP::Router::Blind"       : "lib/HTTP/Router/Blind.pm6"
   },
-  "source-url"  : ""
+  "source-url"  : "https://github.com/ShaneKilkelly/perl6-http-router-blind"
 }
