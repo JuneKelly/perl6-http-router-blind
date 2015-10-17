@@ -1,10 +1,10 @@
 unit class HTTP::Router::Blind;
 
 has %!routes = GET => @[],
-                POST => @[],
-                PUT => @[],
-                DELETE => @[],
-                ANY => @[];
+               POST => @[],
+               PUT => @[],
+               DELETE => @[],
+               ANY => @[];
 
 method get ($path, &handler) {
     %!routes<GET>.push(@($path, &handler));
@@ -28,7 +28,10 @@ method anymethod ($path, &handler) {
 
 method dispatch ($method, $uri, %env) {
     my &handler;
-    for @( %!routes{$method} ) -> ($path, &func) {
+    my @potential-matches;
+    @potential-matches.append(@( %!routes<ANY> ));
+    @potential-matches.append(@( %!routes{$method} ));
+    for @potential-matches -> ($path, &func) {
         if $path ~~ Str {
             if $uri ~~ $path {
                 &handler = &func;
