@@ -1,9 +1,9 @@
 use v6;
 
-BEGIN { @*INC.push('lib') };
+BEGIN { @*INC.unshift('lib') };
 
 use Test;
-plan 9;
+plan 10;
 
 use HTTP::Router::Blind;
 ok 1, "'use HTTP::Router::Blind' worked";
@@ -74,3 +74,17 @@ $result = $router.dispatch('PUT', '/somewhere', %env);
 if $result == True {
     ok 1, "any works";
 };
+
+
+# check multi-handlers
+sub checker (%env) {
+    %env<checked> = True;
+    %env;
+}
+$router.get('/check', &checker, sub (%env) {
+    %env;
+});
+$result = $router.dispatch('GET', '/check', %env);
+if $result<checked> == True {
+    ok 1, "multi-handlers works";
+}

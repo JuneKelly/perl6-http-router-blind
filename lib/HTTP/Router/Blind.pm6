@@ -9,24 +9,24 @@ has &!on-not-found = sub (%env) {
     [404, ['Content-Type' => 'text/plain'], 'Not found']
 };
 
-method get ($path, &handler) {
-    %!routes<GET>.push(@($path, &handler));
+method get ($path, **@handlers) {
+    %!routes<GET>.push(@($path, @handlers));
 }
 
-method post ($path, &handler) {
-    %!routes<POST>.push(@($path, &handler));
+method post ($path, **@handlers) {
+    %!routes<POST>.push(@($path, @handlers));
 }
 
-method put ($path, &handler) {
-    %!routes<PUT>.push(@($path, &handler));
+method put ($path, **@handlers) {
+    %!routes<PUT>.push(@($path, @handlers));
 }
 
-method delete ($path, &handler) {
-    %!routes<DELETE>.push(@($path, &handler));
+method delete ($path, **@handlers) {
+    %!routes<DELETE>.push(@($path, @handlers));
 }
 
-method anymethod ($path, &handler) {
-    %!routes<ANY>.push(@($path, &handler));
+method anymethod ($path, **@handlers) {
+    %!routes<ANY>.push(@($path, @handlers));
 }
 
 
@@ -49,20 +49,28 @@ method !keyword-match ($path, $uri) {
     return %params;
 }
 
+method !apply-handlers (%env, @handlers) {
+    my $result = %env;
+    for @handlers -> &handler {
+        $result = &handler($result);
+    }
+    return $result;
+}
+
 method dispatch ($method, $uri, %env) {
     my @potential-matches;
     @potential-matches.append(@( %!routes<ANY> ));
     @potential-matches.append(@( %!routes{$method} ));
-    for @potential-matches -> ($path, &func) {
+    for @potential-matches -> ($path, @funcs) {
         if $path ~~ Str {
             if $uri eq $path {
-                return &func(%env);
+                return self!apply-handlers(%env, @funcs);
             }
             if $path.contains(':') {
                 my $params = self!keyword-match($path, $uri);
                 if $params {
                     %env<params> = %($params);
-                    return &func(%env);
+                    return self!apply-handlers(%env, @funcs);
                 }
             }
         }
@@ -70,7 +78,7 @@ method dispatch ($method, $uri, %env) {
             my $match = $uri ~~ $path;
             if $match {
                 %env<params> = $match;
-                return &func(%env);
+                return self!apply-handlers(%env, @funcs);
             }
         }
     }
