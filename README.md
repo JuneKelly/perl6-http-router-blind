@@ -37,6 +37,13 @@ $router.get(/\/items\/$<id>=(.*)/, sub (%env) {
     [200, ['Content-Type' => 'text/plain'], ["got request for item $id"]]
 });
 
+# you can pass multiple handler functions
+# which will be chained together in order
+sub do-something-special (%env) { ... }
+$router.get('/secret', &do-something-special, sub (%env) {
+    [200, ['Content-Type' => 'text/plain'], ["it's a secret"]]
+});
+
 # in our app function, we just call $router.dispatch
 my $app = sub (%env) {
     $router.dispatch(%env<REQUEST\_METHOD>, %env<REQUEST\_URI>, %env);
