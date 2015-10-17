@@ -5,6 +5,9 @@ has %!routes = GET => @[],
                PUT => @[],
                DELETE => @[],
                ANY => @[];
+has &!on-not-found = sub (%env) {
+    [404, ['Content-Type' => 'text/plain'], 'Not found']
+};
 
 method get ($path, &handler) {
     %!routes<GET>.push(@($path, &handler));
@@ -46,7 +49,7 @@ method dispatch ($method, $uri, %env) {
         }
     }
     if not &handler {
-        die "No handler found for uri '$uri'"
+        return &!on-not-found(%env);
     }
     my $result = &handler(%env);
     return $result;

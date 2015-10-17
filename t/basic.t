@@ -3,7 +3,7 @@ use v6;
 BEGIN { @*INC.push('lib') };
 
 use Test;
-plan 5;
+plan 6;
 
 use HTTP::Router::Blind;
 ok 1, "'use HTTP::Router::Blind' worked";
@@ -44,4 +44,11 @@ $router.get(/\/(.*)\/(.*)/, sub (%env) {
 $result = $router.dispatch('GET', '/aaa/bbb', %env);
 if $result[0] eq 'aaa' &&  $result[1] eq 'bbb' {
     ok 1, "regex with positional capture group worked";
+};
+
+
+# test the not-found behaviour
+$result = $router.dispatch('GET', '/nothing', %env);
+if $result[0] == 404 {
+    ok 1, "not found works";
 };
