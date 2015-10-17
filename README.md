@@ -23,6 +23,12 @@ $router.get("/about", sub (%env) {
     [200, ['Content-Type' => 'text/plain'], ["About this site"]]
 });
 
+# string match with keyword params
+$router.get("/user/:id", sub (%env) {
+    my $user-id = %env<params><id>;
+    [200, ['Content-Type' => 'text/plain'], ["It's user $user-id"]]
+});
+
 # regex match, with named capture-group,
 # will match a request like '/items/42253',
 # the regex match results are available as %env<params>;
