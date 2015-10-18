@@ -40,7 +40,7 @@ $router.get(/\/items\/$<id>=(.*)/, sub (%env) {
 
 # you can pass multiple handler functions
 # which will be chained together in order
-sub do-something-special (%env) { ... }
+sub do-something-special (%env) { ...; return %env; }
 $router.get('/secret', &do-something-special, sub (%env) {
     [200, ['Content-Type' => 'text/plain'], ["it's a secret"]]
 });
