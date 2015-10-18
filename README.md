@@ -2,6 +2,7 @@
 
 A simple, framework-agnostic HTTP Router for Perl6
 
+[![Build Status](https://travis-ci.org/ShaneKilkelly/perl6-http-router-blind.svg?branch=master)](https://travis-ci.org/ShaneKilkelly/perl6-http-router-blind)
 
 ## Example
 
