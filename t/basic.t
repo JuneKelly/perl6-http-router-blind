@@ -27,8 +27,8 @@ if $result ~~ 'this-is-get' {
 };
 
 # :keyword route
-$router.get("/stuff/:id/thing/:foo", sub (%env) {
-    %env<params>;
+$router.get("/stuff/:id/thing/:foo", sub (%env, $params) {
+    $params;
 });
 
 $result = $router.dispatch('GET', "/stuff/422/thing/wat", %env);
@@ -41,8 +41,8 @@ if $result[0] == 404 {
 }
 
 # Regex route with named capture group
-$router.get(/\/items\/$<id>=(.*)/, sub (%env) {
-    %env<params><id>;
+$router.get(/\/items\/$<id>=(.*)/, sub (%env, $params) {
+    $params<id>;
 });
 
 $result = $router.dispatch('GET', '/items/4221', %env);
@@ -51,8 +51,8 @@ if $result ~~ '4221' {
 };
 
 # Regex route with positional capture group
-$router.get(/\/reg\/(.*)\/(.*)/, sub (%env) {
-    %env<params>[0], %env<params>[1]
+$router.get(/\/reg\/(.*)\/(.*)/, sub (%env, $params) {
+    $params[0], $params[1]
 });
 
 $result = $router.dispatch('GET', '/reg/aaa/bbb', %env);
