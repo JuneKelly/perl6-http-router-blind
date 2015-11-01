@@ -3,7 +3,7 @@ use v6;
 BEGIN { @*INC.unshift('lib') };
 
 use Test;
-plan 2;
+plan 4;
 
 use HTTP::Router::Blind;
 
@@ -18,6 +18,19 @@ $router.get: '/one/:name', -> %env, $params {
 
 $result = $router.dispatch: 'GET', '/one/jim', %env;
 ok $result eq 'jim', 'basic keyword match works';
+
+
+# multi-keyword route
+$router.get: "/stuff/:id/thing/:foo", -> %env, $params {
+    $params;
+};
+
+$result = $router.dispatch: 'GET', "/stuff/422/thing/wat", %env;
+ok $result<id> eq '422' && $result<foo> eq 'wat', "keyword match works";
+
+$result = $router.dispatch: 'GET', "/no/423/not/wait", %env;
+ok $result[0] == 404, "keyword match should not work on wrong path";
+
 
 # multi-handlers with keyword params
 sub checker (%env, $params) {
