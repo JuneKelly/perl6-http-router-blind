@@ -3,7 +3,7 @@ use v6;
 BEGIN { @*INC.unshift('lib') };
 
 use Test;
-plan 4;
+plan 5;
 
 use HTTP::Router::Blind;
 
@@ -45,3 +45,19 @@ $router.get: '/othercheck/:thing', &checker, -> %env, $params {
 
 $result = $router.dispatch('GET', '/othercheck/yes', %env);
 ok $result<checked> == True, 'multi-handler with keyword params works';
+
+
+# realistic example
+$router.get(
+    '/project/:projectId/document/:docId/attachment/:attachmentId',
+    -> %env, $params {
+        my $project-id = $params<projectId>;
+        my $doc-id = $params<docId>;
+        my $attachment-id = $params<attachmentId>;
+        my $content = "$project-id - $doc-id - $attachment-id";
+        [200, ['Content-Type' => 'text/plain'], [$content]];
+    }
+);
+
+$result = $router.dispatch: 'GET', '/project/2/document/8/attachment/ba4e5d', %env;
+ok $result[2] == ['2 - 8 - ba4e5d'], 'realistic example works';
